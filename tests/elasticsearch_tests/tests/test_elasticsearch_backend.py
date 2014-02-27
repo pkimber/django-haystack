@@ -91,7 +91,7 @@ class ElasticsearchAnotherMockModelSearchIndex(indexes.SearchIndex, indexes.Inde
         return AnotherMockModel
 
     def prepare_text(self, obj):
-        return u"You might be searching for the user %s" % obj.author
+        return "You might be searching for the user %s" % obj.author
 
 
 class ElasticsearchBoostMockSearchIndex(indexes.SearchIndex, indexes.Indexable):
@@ -380,12 +380,12 @@ class ElasticsearchSearchBackendTestCase(TestCase):
 
         self.assertEqual(self.sb.search(''), {'hits': 0, 'results': []})
         self.assertEqual(self.sb.search('*:*')['hits'], 3)
-        self.assertEqual(set([result.pk for result in self.sb.search('*:*')['results']]), set([u'2', u'1', u'3']))
+        self.assertEqual(set([result.pk for result in self.sb.search('*:*')['results']]), set(['2', '1', '3']))
 
         self.assertEqual(self.sb.search('', highlight=True), {'hits': 0, 'results': []})
         self.assertEqual(self.sb.search('Index', highlight=True)['hits'], 3)
         self.assertEqual(sorted([result.highlighted[0] for result in self.sb.search('Index', highlight=True)['results']]),
-            [u'<em>Indexed</em>!\n1', u'<em>Indexed</em>!\n2', u'<em>Indexed</em>!\n3'])
+            ['<em>Indexed</em>!\n1', '<em>Indexed</em>!\n2', '<em>Indexed</em>!\n3'])
 
         self.assertEqual(self.sb.search('Indx')['hits'], 0)
         self.assertEqual(self.sb.search('indaxed')['spelling_suggestion'], 'indexed')
@@ -404,14 +404,14 @@ class ElasticsearchSearchBackendTestCase(TestCase):
         self.assertEqual(self.sb.search('', query_facets=[('name', '[* TO e]')]), {'hits': 0, 'results': []})
         results = self.sb.search('Index', query_facets=[('name', '[* TO e]')])
         self.assertEqual(results['hits'], 3)
-        self.assertEqual(results['facets']['queries'], {u'name': 3})
+        self.assertEqual(results['facets']['queries'], {'name': 3})
 
         self.assertEqual(self.sb.search('', narrow_queries=set(['name:daniel1'])), {'hits': 0, 'results': []})
         results = self.sb.search('Index', narrow_queries=set(['name:daniel1']))
         self.assertEqual(results['hits'], 1)
 
         # Ensure that swapping the ``result_class`` works.
-        self.assertTrue(isinstance(self.sb.search(u'index', result_class=MockSearchResult)['results'][0], MockSearchResult))
+        self.assertTrue(isinstance(self.sb.search('index', result_class=MockSearchResult)['results'][0], MockSearchResult))
 
         # Check the use of ``limit_to_registered_models``.
         self.assertEqual(self.sb.search('', limit_to_registered_models=False), {'hits': 0, 'results': []})
@@ -488,7 +488,7 @@ class ElasticsearchSearchBackendTestCase(TestCase):
         sb.update(smtmmi, self.sample_objs)
 
         self.assertEqual(sb.search('*:*')['hits'], 3)
-        self.assertEqual([result.month for result in sb.search('*:*')['results']], [u'02', u'02', u'02'])
+        self.assertEqual([result.month for result in sb.search('*:*')['results']], ['02', '02', '02'])
         connections['default']._index = old_ui
 
 
@@ -612,7 +612,7 @@ class LiveElasticsearchSearchQueryTestCase(TestCase):
         len(self.sq.get_results())
         self.assertEqual(len(connections['default'].queries), 2)
         self.assertEqual(connections['default'].queries[0]['query_string'], 'name:(bar)')
-        self.assertEqual(connections['default'].queries[1]['query_string'], u'(name:(bar) AND text:(moof))')
+        self.assertEqual(connections['default'].queries[1]['query_string'], '(name:(bar) AND text:(moof))')
 
         # Restore.
         settings.DEBUG = old_debug
@@ -662,7 +662,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
         sqs = self.sqs.order_by('pub_date').load_all()
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertTrue(len(sqs) > 0)
-        self.assertEqual(sqs[2].object.foo, u'In addition, you may specify other fields to be populated along with the document. In this case, we also index the user who authored the document as well as the date the document was published. The variable you assign the SearchField to should directly map to the field your search backend is expecting. You instantiate most search fields with a parameter that points to the attribute of the object to populate that field with.')
+        self.assertEqual(sqs[2].object.foo, 'In addition, you may specify other fields to be populated along with the document. In this case, we also index the user who authored the document as well as the date the document was published. The variable you assign the SearchField to should directly map to the field your search backend is expecting. You instantiate most search fields with a parameter that points to the attribute of the object to populate that field with.')
 
     def test_iter(self):
         reset_search_queries()
@@ -734,7 +734,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
 
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertEqual(len(sqs.query.query_filter), 2)
-        self.assertEqual(sqs.query.build_query(), u'((foo) AND (bar))')
+        self.assertEqual(sqs.query.build_query(), '((foo) AND (bar))')
 
         # Now for something more complex...
         sqs3 = self.sqs.exclude(title='moof').filter(SQ(content='foo') | SQ(content='baz'))
@@ -743,7 +743,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
 
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertEqual(len(sqs.query.query_filter), 3)
-        self.assertEqual(sqs.query.build_query(), u'(NOT (title:(moof)) AND ((foo) OR (baz)) AND (bar))')
+        self.assertEqual(sqs.query.build_query(), '(NOT (title:(moof)) AND ((foo) OR (baz)) AND (bar))')
 
     def test___or__(self):
         sqs1 = self.sqs.filter(content='foo')
@@ -752,7 +752,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
 
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertEqual(len(sqs.query.query_filter), 2)
-        self.assertEqual(sqs.query.build_query(), u'((foo) OR (bar))')
+        self.assertEqual(sqs.query.build_query(), '((foo) OR (bar))')
 
         # Now for something more complex...
         sqs3 = self.sqs.exclude(title='moof').filter(SQ(content='foo') | SQ(content='baz'))
@@ -761,7 +761,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
 
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertEqual(len(sqs.query.query_filter), 2)
-        self.assertEqual(sqs.query.build_query(), u'((NOT (title:(moof)) AND ((foo) OR (baz))) OR (bar))')
+        self.assertEqual(sqs.query.build_query(), '((NOT (title:(moof)) AND ((foo) OR (baz))) OR (bar))')
 
     def test_auto_query(self):
         # Ensure bits in exact matches get escaped properly as well.
@@ -769,7 +769,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
         sqs = self.sqs.auto_query('"pants:rule"')
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertEqual(repr(sqs.query.query_filter), '<SQ: AND content__contains="pants:rule">')
-        self.assertEqual(sqs.query.build_query(), u'("pants\\:rule")')
+        self.assertEqual(sqs.query.build_query(), '("pants\\:rule")')
         self.assertEqual(len(sqs), 0)
 
     # Regressions
@@ -806,7 +806,7 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
         sqs = self.rsqs.order_by('pub_date').load_all()
         self.assertTrue(isinstance(sqs, SearchQuerySet))
         self.assertTrue(len(sqs) > 0)
-        self.assertEqual(sqs[2].object.foo, u'In addition, you may specify other fields to be populated along with the document. In this case, we also index the user who authored the document as well as the date the document was published. The variable you assign the SearchField to should directly map to the field your search backend is expecting. You instantiate most search fields with a parameter that points to the attribute of the object to populate that field with.')
+        self.assertEqual(sqs[2].object.foo, 'In addition, you may specify other fields to be populated along with the document. In this case, we also index the user who authored the document as well as the date the document was published. The variable you assign the SearchField to should directly map to the field your search backend is expecting. You instantiate most search fields with a parameter that points to the attribute of the object to populate that field with.')
 
     def test_related_load_all_queryset(self):
         sqs = self.rsqs.load_all().order_by('pub_date')
@@ -882,55 +882,55 @@ class LiveElasticsearchSearchQuerySetTestCase(TestCase):
         self.assertEqual(len(connections['default'].queries), 5)
 
     def test_quotes_regression(self):
-        sqs = self.sqs.auto_query(u"44°48'40''N 20°28'32''E")
+        sqs = self.sqs.auto_query("44°48'40''N 20°28'32''E")
         # Should not have empty terms.
-        self.assertEqual(sqs.query.build_query(), u"(44\xb048'40''N 20\xb028'32''E)")
+        self.assertEqual(sqs.query.build_query(), "(44\xb048'40''N 20\xb028'32''E)")
         # Should not cause Elasticsearch to 500.
         self.assertEqual(sqs.count(), 0)
 
         sqs = self.sqs.auto_query('blazing')
-        self.assertEqual(sqs.query.build_query(), u'(blazing)')
+        self.assertEqual(sqs.query.build_query(), '(blazing)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('blazing saddles')
-        self.assertEqual(sqs.query.build_query(), u'(blazing saddles)')
+        self.assertEqual(sqs.query.build_query(), '(blazing saddles)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('"blazing saddles')
-        self.assertEqual(sqs.query.build_query(), u'(\\"blazing saddles)')
+        self.assertEqual(sqs.query.build_query(), '(\\"blazing saddles)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('"blazing saddles"')
-        self.assertEqual(sqs.query.build_query(), u'("blazing saddles")')
+        self.assertEqual(sqs.query.build_query(), '("blazing saddles")')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing saddles"')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing saddles")')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing saddles")')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing \'saddles"')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing \'saddles")')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing \'saddles")')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing \'\'saddles"')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing \'\'saddles")')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing \'\'saddles")')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing \'\'saddles"\'')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing \'\'saddles" \')')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing \'\'saddles" \')')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing \'\'saddles"\'"')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing \'\'saddles" \'\\")')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing \'\'saddles" \'\\")')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('"blazing saddles" mel')
-        self.assertEqual(sqs.query.build_query(), u'("blazing saddles" mel)')
+        self.assertEqual(sqs.query.build_query(), '("blazing saddles" mel)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('"blazing saddles" mel brooks')
-        self.assertEqual(sqs.query.build_query(), u'("blazing saddles" mel brooks)')
+        self.assertEqual(sqs.query.build_query(), '("blazing saddles" mel brooks)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing saddles" brooks')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing saddles" brooks)')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing saddles" brooks)')
         self.assertEqual(sqs.count(), 0)
         sqs = self.sqs.auto_query('mel "blazing saddles" "brooks')
-        self.assertEqual(sqs.query.build_query(), u'(mel "blazing saddles" \\"brooks)')
+        self.assertEqual(sqs.query.build_query(), '(mel "blazing saddles" \\"brooks)')
         self.assertEqual(sqs.count(), 0)
 
     def test_query_generation(self):
         sqs = self.sqs.filter(SQ(content=AutoQuery("hello world")) | SQ(title=AutoQuery("hello world")))
-        self.assertEqual(sqs.query.build_query(), u"((hello world) OR title:(hello world))")
+        self.assertEqual(sqs.query.build_query(), "((hello world) OR title:(hello world))")
 
     def test_result_class(self):
         # Assert that we're defaulting to ``SearchResult``.
@@ -1017,17 +1017,17 @@ class LiveElasticsearchMoreLikeThisTestCase(TestCase):
     def test_more_like_this(self):
         mlt = self.sqs.more_like_this(MockModel.objects.get(pk=1))
         self.assertEqual(mlt.count(), 4)
-        self.assertEqual(set([result.pk for result in mlt]), set([u'2', u'6', u'16', u'23']))
+        self.assertEqual(set([result.pk for result in mlt]), set(['2', '6', '16', '23']))
         self.assertEqual(len([result.pk for result in mlt]), 4)
 
         alt_mlt = self.sqs.filter(name='daniel3').more_like_this(MockModel.objects.get(pk=2))
         self.assertEqual(alt_mlt.count(), 6)
-        self.assertEqual(set([result.pk for result in alt_mlt]), set([u'2', u'6', u'16', u'23', u'1', u'11']))
+        self.assertEqual(set([result.pk for result in alt_mlt]), set(['2', '6', '16', '23', '1', '11']))
         self.assertEqual(len([result.pk for result in alt_mlt]), 6)
 
         alt_mlt_with_models = self.sqs.models(MockModel).more_like_this(MockModel.objects.get(pk=1))
         self.assertEqual(alt_mlt_with_models.count(), 4)
-        self.assertEqual(set([result.pk for result in alt_mlt_with_models]), set([u'2', u'6', u'16', u'23']))
+        self.assertEqual(set([result.pk for result in alt_mlt_with_models]), set(['2', '6', '16', '23']))
         self.assertEqual(len([result.pk for result in alt_mlt_with_models]), 4)
 
         if hasattr(MockModel.objects, 'defer'):
@@ -1170,7 +1170,7 @@ class LiveElasticsearchRoundTripTestCase(TestCase):
         self.assertEqual(result.is_active, True)
         self.assertEqual(result.post_count, 25)
         self.assertEqual(result.average_rating, 3.6)
-        self.assertEqual(result.price, u'24.99')
+        self.assertEqual(result.price, '24.99')
         self.assertEqual(result.pub_date, datetime.date(2009, 11, 21))
         self.assertEqual(result.created, datetime.datetime(2009, 11, 21, 21, 31, 00))
         self.assertEqual(result.tags, ['staff', 'outdoor', 'activist', 'scientist'])

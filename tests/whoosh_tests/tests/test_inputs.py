@@ -39,7 +39,7 @@ class WhooshInputTestCase(TestCase):
 
     def test_exact_prepare(self):
         exact = inputs.Exact('hello OR there, :you')
-        self.assertEqual(exact.prepare(self.query_obj), u'"hello OR there, :you"')
+        self.assertEqual(exact.prepare(self.query_obj), '"hello OR there, :you"')
 
     def test_not_init(self):
         not_it = inputs.Not('hello OR there, :you')
@@ -48,7 +48,7 @@ class WhooshInputTestCase(TestCase):
 
     def test_not_prepare(self):
         not_it = inputs.Not('hello OR there, :you')
-        self.assertEqual(not_it.prepare(self.query_obj), u"NOT (hello or there, ':you')")
+        self.assertEqual(not_it.prepare(self.query_obj), "NOT (hello or there, ':you')")
 
     def test_autoquery_init(self):
         autoquery = inputs.AutoQuery('panic -don\'t "froody dude"')
@@ -57,7 +57,7 @@ class WhooshInputTestCase(TestCase):
 
     def test_autoquery_prepare(self):
         autoquery = inputs.AutoQuery('panic -don\'t "froody dude"')
-        self.assertEqual(autoquery.prepare(self.query_obj), u'panic NOT don\'t "froody dude"')
+        self.assertEqual(autoquery.prepare(self.query_obj), 'panic NOT don\'t "froody dude"')
 
     def test_altparser_init(self):
         altparser = inputs.AltParser('dismax')

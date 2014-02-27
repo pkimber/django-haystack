@@ -192,7 +192,7 @@ class BaseSearchBackend(object):
         models = []
 
         for model in connections[self.connection_alias].get_unified_index().get_indexed_models():
-            models.append(u"%s.%s" % (model._meta.app_label, model._meta.module_name))
+            models.append("%s.%s" % (model._meta.app_label, model._meta.module_name))
 
         return models
 
@@ -756,10 +756,10 @@ class BaseSearchQuery(object):
         if ' ' in query_string:
             query_string = "(%s)" % query_string
 
-        return u"NOT %s" % query_string
+        return "NOT %s" % query_string
 
     def build_exact_query(self, query_string):
-        return u'"%s"' % query_string
+        return '"%s"' % query_string
 
     def add_filter(self, query_filter, use_or=False):
         """
